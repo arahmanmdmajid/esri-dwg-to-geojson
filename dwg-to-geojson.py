@@ -70,6 +70,7 @@ arcpy.FeaturesToJSON_conversion(shpFilePath, outJsonFilePath, format_json=None,
 
 geoJsonFilePath = rootPath + filename + ".geojson"
 
+# create a file and add write the converted json to geojson
 with open(geoJsonFilePath, 'w') as geoJsonFile, open(outJsonFilePath, 'r') as jsonFile:
     for line in jsonFile:
         testvar = line
