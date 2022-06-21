@@ -1,0 +1,8 @@
+{
+    "python.autoComplete.extraPaths": [
+        "C:/Python27/ArcGIS10.8/python.exe"
+    ],
+    "python.analysis.extraPaths": [
+        "C:/Python27/ArcGIS10.8/python.exe"
+    ]
+}

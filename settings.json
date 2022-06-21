@@ -1,0 +1,7 @@
+{
+    "python.autoComplete.extraPaths": [
+        "C:/Program Files (x86)/Google/google_appengine",
+        "C:/Program Files (x86)/Google/google_appengine/lib/flask-0.12",
+        "C:/Python27/ArcGIS10.8/python.exe"
+    ]
+}
