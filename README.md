@@ -41,7 +41,8 @@ The script can also be published as a geoprocessing service. See the note on the
 
 ## Notes
 
-- Temporary files are written to a scratch folder set by `rootPath` at the top of the script. Change it to a folder that exists on your machine or server.
+- Temporary files and the output are written to the ArcGIS scratch folder (`arcpy.env.scratchFolder`).
+- The input DWG is copied to the scratch folder first. Your original file is not changed.
 - Run it once per geometry type. A DWG with several geometry types needs one run for each.
 
 ## License
