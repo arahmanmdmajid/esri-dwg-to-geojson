@@ -10,82 +10,62 @@
 # -------------------------------------------------------------------------------
 
 # Import arcpy site-package
-#
-# sourcery skip: use-fstring-for-formatting
 import arcpy
 import os
-import re
+import shutil
 from arcgis2geojson import arcgis2geojson
 
 # Read the parameter values:
-#  1: input DWG file
-#  2: input Geometry type
+#  0: input DWG file
+#  1: input Geometry type
 dwgFilePath = arcpy.GetParameterAsText(0)
 geometryType = arcpy.GetParameterAsText(1)
-
 
 arcpy.env.overwriteOutput = True
 arcpy.env.outputCoordinateSystem = arcpy.SpatialReference(4326)
 
-# Output parameter values:
-#  1: output JSON file path
-outJsonFile = arcpy.GetParameterAsText(2)
+# Output parameter value:
+#  2: output GeoJSON file path (set at the end of the script)
 
-# root directory in your sever where you are publishing the script
-rootPath = "C:\\Documents\\scratch"
+# folder for temporary and output files
+rootPath = arcpy.env.scratchFolder
 
-# get file name and its path in separate varibles
-filename = os.path.basename(dwgFilePath)
-filePath = os.path.dirname(dwgFilePath)
+# Hyphens are not allowed in shapefile names, so work on a copy of the DWG
+# with underscores. The user's input file is not touched.
+filename = os.path.basename(dwgFilePath).replace("-", "_")
+workDwgPath = os.path.join(rootPath, filename)
+shutil.copyfile(dwgFilePath, workDwgPath)
 
-# replace any hyphens/dash('-') in file name with underscore('_') as not allowed in valid shp file name
-filename = filename.replace("-", "_")
+# file name without the extension, used for naming new files
+filename = os.path.splitext(filename)[0]
 
-# new file name complete path
-newFileNamePath = filePath + '\\' + filename
-
-# rename file
-os.rename(dwgFilePath, newFileNamePath)
-
-# file only file name and remove the extension to be used for naming new files
-filename = re.sub('.dwg$', '', filename, flags=re.IGNORECASE)
-
-dwgFilePath = newFileNamePath + '\\' + geometryType
+dwgFeatureClass = os.path.join(workDwgPath, geometryType)
 
 outputFilename = "{0}_DWG_{1}.shp".format(filename, geometryType)
 
-arcpy.FeatureClassToShapefile_conversion(dwgFilePath, rootPath)
+arcpy.FeatureClassToShapefile_conversion(dwgFeatureClass, rootPath)
 
-# get list of file after file conversion to shapefile
+# list of files after the shapefile conversion, used for clean up
 filesAfterShapefile = os.listdir(rootPath)
 
-# generate complete path for the new shapefile
-shpFilePath = rootPath + outputFilename
-
-# generate new file name for the JSON file
-outJsonFilePath = rootPath + filename + ".json"
+shpFilePath = os.path.join(rootPath, outputFilename)
+outJsonFilePath = os.path.join(rootPath, filename + ".json")
 
 arcpy.FeaturesToJSON_conversion(shpFilePath, outJsonFilePath, format_json=None,
                                 include_z_values=None, include_m_values=None, geoJSON=False)
 
-geoJsonFilePath = rootPath + filename + ".geojson"
+geoJsonFilePath = os.path.join(rootPath, filename + ".geojson")
 
-# create a file and add write the converted json to geojson
-with open(geoJsonFilePath, 'w') as geoJsonFile, open(outJsonFilePath, 'r') as jsonFile:
-    for line in jsonFile:
-        testvar = line
-        output = arcgis2geojson(testvar)
-        geoJsonFile.write(output)
+# convert the Esri JSON to GeoJSON
+with open(outJsonFilePath, 'r') as jsonFile:
+    geoJson = arcgis2geojson(jsonFile.read())
+with open(geoJsonFilePath, 'w') as geoJsonFile:
+    geoJsonFile.write(geoJson)
 
-# get list of file only with the current file name for clean up
-newFileList = [
-    file for file in filesAfterShapefile if file.startswith(filename)]
-
-# delete unwanted file
-for file in newFileList:
-    # fileText, fileExtension = os.path.splitext(file)
-    # if(fileExtension != '.json'):
-    tempFilePath = rootPath + file
-    os.remove(tempFilePath)
+# delete the temporary files created by this run
+os.remove(outJsonFilePath)
+for file in filesAfterShapefile:
+    if file.startswith(filename) and file != filename + ".geojson":
+        os.remove(os.path.join(rootPath, file))
 
 arcpy.SetParameterAsText(2, geoJsonFilePath)
