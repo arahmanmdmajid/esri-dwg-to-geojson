@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+*.sbn
+*.sbx
+*.shp.xml

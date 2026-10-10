@@ -6,7 +6,7 @@
 #
 # Created:     05/06/2022
 # Copyright:   (c) amuhammad 2022
-# Licence:     <your licence>
+# Licence:     MIT (see LICENSE)
 # -------------------------------------------------------------------------------
 
 # Import arcpy site-package
